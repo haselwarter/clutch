@@ -9,7 +9,8 @@ From clutch.bi Require Import weakestpre.
 From clutch.prob_lang Require Import erasure.
 From clutch.common Require Export language.
 From clutch.ctx_logic Require Import weakestpre primitive_laws spec_ra.
-From clutch.prob Require Import distribution. 
+From clutch.prob Require Import distribution.
+Import uPred.
 
 Section adequacy.
   Context `{!clutchGS Σ}.
@@ -190,11 +191,11 @@ Section adequacy.
 End adequacy.
 
 Class clutchGpreS Σ := ClutchGpreS {
-  clutchGpreS_iris  :> invGpreS Σ;
-  clutchGpreS_heap  :> ghost_mapG Σ loc val;
-  clutchGpreS_tapes :> ghost_mapG Σ loc tape;
-  clutchGpreS_cfg   :> inG Σ (authUR cfgUR);
-  clutchGpreS_prog  :> inG Σ (authR progUR);
+  clutchGpreS_iris  :: invGpreS Σ;
+  clutchGpreS_heap  :: ghost_mapG Σ loc val;
+  clutchGpreS_tapes :: ghost_mapG Σ loc tape;
+  clutchGpreS_cfg   :: inG Σ (authUR cfgUR);
+  clutchGpreS_prog  :: inG Σ (authR progUR);
 }.
 
 Definition clutchΣ : gFunctors :=
@@ -211,7 +212,7 @@ Theorem wp_refRcoupl Σ `{clutchGpreS Σ} (e e' : expr) (σ σ' : state) n φ :
   refRcoupl (exec n (e, σ)) (lim_exec (e', σ')) φ.
 Proof.
   intros Hwp.
-  eapply (step_fupdN_soundness_no_lc _ n 0).
+  eapply pure_soundness, (step_fupdN_soundness_no_lc _ n 0).
   iIntros (Hinv) "_".
   iMod (ghost_map_alloc σ.(heap)) as "[%γH [Hh _]]".
   iMod (ghost_map_alloc σ.(tapes)) as "[%γT [Ht _]]".

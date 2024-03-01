@@ -129,13 +129,24 @@ Tactic Notation "wp_pure" open_constr(efoc) :=
   iStartProof;
   lazymatch goal with
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
+      let e := eval simpl in e in
+      reshape_expr e ltac:(fun K e' =>
+        unify e' efoc;
+        eapply (tac_wp_pure_later _ _ _ _ K e');
+        [tc_solve                       (* PureExec *)
+        |try solve_vals_compare_safe    (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
+        |tc_solve                       (* IntoLaters *)
+        |wp_finish                      (* new goal *)
+        ])
+    || fail "wp_pure: cannot find" efoc "in" e "or" efoc "is not a redex"
+  | |- envs_entails _ (twp ?s ?E ?e ?Q) =>
     let e := eval simpl in e in
     reshape_expr e ltac:(fun K e' =>
       unify e' efoc;
       eapply (tac_wp_pure_later _ _ _ _ K e');
-      [iSolveTC                       (* PureExec *)
+      [tc_solve                       (* PureExec *)
       |try solve_vals_compare_safe    (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
-      |iSolveTC                       (* IntoLaters *)
+      |tc_solve                       (* IntoLaters *)
       |wp_finish                      (* new goal *)
       ])
     || fail "wp_pure: cannot find" efoc "in" e "or" efoc "is not a redex"
@@ -242,7 +253,7 @@ Section heap_tactics.
   Proof.
     rewrite envs_entails_unseal=> ? HΔ.
     rewrite -wptac_wp_bind.
-    eapply bi.wand_apply; first exact: wptac_wp_alloc.
+    eapply bi.wand_apply. 1: apply bi.wand_entails, wptac_wp_alloc.
     rewrite left_id into_laterN_env_sound.
     apply bi.laterN_mono, bi.forall_intro=> l.
     specialize (HΔ l).
@@ -260,7 +271,7 @@ Section heap_tactics.
     envs_entails Δ (WP fill K (Load (Val $ LitV $ LitLoc l)) @ a; E {{ Φ }}).
   Proof.
     rewrite envs_entails_unseal=> ?? Hi.
-    rewrite -wptac_wp_bind. eapply bi.wand_apply; [exact: wptac_wp_load|].
+    rewrite -wptac_wp_bind. eapply bi.wand_apply; [apply bi.wand_entails, wptac_wp_load => //|].
     rewrite into_laterN_env_sound.
     destruct laters.
     - rewrite -bi.later_sep.
@@ -286,7 +297,7 @@ Section heap_tactics.
   Proof.
     rewrite envs_entails_unseal=> ?? Hcnt.
     destruct (envs_simple_replace _ _ _) as [Δ''|] eqn:HΔ''; [ | contradiction ].
-    rewrite -wptac_wp_bind. eapply bi.wand_apply; [by eapply wptac_wp_store|].
+    rewrite -wptac_wp_bind. eapply bi.wand_apply; [by eapply bi.wand_entails, wptac_wp_store|].
     rewrite into_laterN_env_sound.
     destruct laters.
     - rewrite -bi.later_sep envs_simple_replace_sound //; simpl.
@@ -322,7 +333,7 @@ Tactic Notation "wp_alloc" ident(l) "as" constr(H) :=
         first
           [reshape_expr e ltac:(fun K e' => eapply (tac_wp_alloc _ _ _ Htmp K))
           |fail 1 "wp_alloc: cannot find 'Alloc' in" e];
-        [iSolveTC
+        [tc_solve
         |finish ()]
     in (process_single ())
   | _ => fail "wp_alloc: not a 'wp'"
@@ -341,7 +352,14 @@ Tactic Notation "wp_load" :=
     first
       [reshape_expr e ltac:(fun K e' => eapply (tac_wp_load _ _ _ _ K))
       |fail 1 "wp_load: cannot find 'Load' in" e];
-    [iSolveTC
+    [tc_solve
+    |solve_wptac_mapsto ()
+    |wp_finish]
+  | |- envs_entails _ (twp ?s ?E ?e ?Q) =>
+    first
+      [reshape_expr e ltac:(fun K e' => eapply (tac_wp_load _ _ _ _ K))
+      |fail 1 "wp_load: cannot find 'Load' in" e];
+    [tc_solve
     |solve_wptac_mapsto ()
     |wp_finish]
   | _ => fail "wp_load: not a 'wp'"
@@ -357,7 +375,14 @@ Tactic Notation "wp_store" :=
     first
       [reshape_expr e ltac:(fun K e' => eapply (tac_wp_store _ _ _ _ K))
       |fail 1 "wp_store: cannot find 'Store' in" e];
-    [iSolveTC
+    [tc_solve
+    |solve_wptac_mapsto ()
+    |pm_reduce; first [wp_seq|wp_finish]]
+  | |- envs_entails _ (twp ?s ?E ?e ?Q) =>
+    first
+      [reshape_expr e ltac:(fun K e' => eapply (tac_wp_store _ _ _ _ K))
+      |fail 1 "wp_store: cannot find 'Store' in" e];
+    [tc_solve
     |solve_wptac_mapsto ()
     |pm_reduce; first [wp_seq|wp_finish]]
   | _ => fail "wp_store: not a 'wp'"

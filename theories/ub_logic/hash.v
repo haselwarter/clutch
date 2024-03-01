@@ -69,7 +69,7 @@ Module simple_bit_hash.
   Lemma coll_free_insert (m : gmap nat Z) (n : nat) (z : Z) :
     m !! n = None ->
     coll_free m ->
-    Forall (λ x, z ≠ snd x) (gmap_to_list m) ->
+    Forall (λ x, z ≠ snd x) (map_to_list m) ->
     coll_free (<[ n := z ]>m).
   Proof.
     intros Hnone Hcoll HForall.
@@ -127,7 +127,7 @@ Module simple_bit_hash.
 
   Lemma wp_insert_no_coll E f m (n : nat) (z : Z) :
     m !! n = None →
-    {{{ hashfun f m ∗ € (nnreal_div (nnreal_nat (length (gmap_to_list m))) (nnreal_nat(val_size+1))) ∗
+    {{{ hashfun f m ∗ € (nnreal_div (nnreal_nat (length (map_to_list m))) (nnreal_nat(val_size+1))) ∗
           ⌜coll_free m⌝ }}}
       f #n @ E
     {{{ (v : Z), RET #v; hashfun f (<[ n := v ]>m) ∗ ⌜coll_free (<[ n := v ]>m)⌝ }}}.
@@ -140,7 +140,7 @@ Module simple_bit_hash.
     iIntros (vret) "(Hhash&->)".
     rewrite lookup_fmap Hlookup /=. wp_pures.
     wp_bind (rand _)%E.
-    wp_apply (wp_rand_err_list_int _ val_size (map (λ p, snd p) (gmap_to_list m))); auto.
+    wp_apply (wp_rand_err_list_int _ val_size (map (λ p, snd p) (map_to_list m))); auto.
     rewrite map_length.
     iFrame.
     iIntros "%x %HForall".

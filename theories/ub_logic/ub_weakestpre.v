@@ -20,7 +20,7 @@ Local Open Scope NNR_scope.
     error (i.e. terminating in a state that does not satisfy the postcondition)
  *)
 Class irisGS (Λ : language) (Σ : gFunctors) := IrisG {
-  iris_invGS :> invGS_gen HasNoLc Σ;
+  iris_invGS :: invGS_gen HasNoLc Σ;
   state_interp : state Λ → iProp Σ;
   err_interp : nonnegreal → iProp Σ;
 }.
@@ -773,9 +773,9 @@ Proof.
   apply least_fixpoint_ne_outer; [|done].
   intros ? [? []]. rewrite /exec_ub_pre.
   do 15 f_equiv.
-  { f_contractive. do 3 f_equiv. rewrite IH; [done|lia|].
+  { f_contractive_fin. do 3 f_equiv. rewrite IH; [done|lia|].
     intros ?. eapply dist_S, HΦ. }
-  { do 2 f_equiv. f_contractive. rewrite IH; [done|lia|].
+  { do 2 f_equiv. f_contractive_fin. rewrite IH; [done|lia|].
     intros ?. eapply dist_S, HΦ. }
 Qed.
 
