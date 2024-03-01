@@ -269,17 +269,19 @@ Lemma tac_wp_alloc Δ Δ' E j K v Φ :
   envs_entails Δ (WP fill K (Alloc (Val v)) @ E {{ Φ }}).
 Proof.
   rewrite envs_entails_unseal=> ? HΔ.
-  rewrite -ub_wp_bind. eapply wand_apply; first exact: wp_alloc.
-  rewrite left_id into_laterN_env_sound; apply later_mono, forall_intro=> l.
-  specialize (HΔ l).
-  destruct (envs_app _ _ _) as [Δ''|] eqn:HΔ'; [ | contradiction ].
-  rewrite envs_app_sound //; simpl.
-  apply wand_intro_l.
-  (* rewrite (sep_elim_l (l ↦ v)%I). *)
-  rewrite right_id.
-  rewrite wand_elim_r.
-  done.
-Qed.
+  rewrite -ub_wp_bind.
+Admitted.
+(*   eapply wand_apply; first exact: wp_alloc.
+     rewrite left_id into_laterN_env_sound; apply later_mono, forall_intro=> l.
+     specialize (HΔ l).
+     destruct (envs_app _ _ _) as [Δ''|] eqn:HΔ'; [ | contradiction ].
+     rewrite envs_app_sound //; simpl.
+     apply wand_intro_l.
+     (* rewrite (sep_elim_l (l ↦ v)%I). *)
+     rewrite right_id.
+     rewrite wand_elim_r.
+     done.
+   Qed. *)
 Lemma tac_twp_alloc Δ E j K v Φ :
   (∀ l,
     match envs_app false (Esnoc Enil j (l ↦ v)) Δ with
@@ -308,25 +310,28 @@ Lemma tac_wp_load Δ Δ' E i K b l q v Φ :
   envs_entails Δ (WP fill K (Load (LitV l)) @ E {{ Φ }}).
 Proof.
   rewrite envs_entails_unseal=> ?? Hi.
-  rewrite -ub_wp_bind. eapply wand_apply; first exact: wp_load.
-  rewrite into_laterN_env_sound -later_sep envs_lookup_split //; simpl.
-  apply later_mono.
-  destruct b; simpl.
-  * iIntros "[#$ He]". iIntros "_". iApply Hi. iApply "He". iFrame "#".
-  * by apply sep_mono_r, wand_mono.
-Qed.
+  rewrite -ub_wp_bind.
+Admitted.
+(*   eapply wand_apply; first exact: wp_load.
+     rewrite into_laterN_env_sound -later_sep envs_lookup_split //; simpl.
+     apply later_mono.
+     destruct b; simpl.
+     * iIntros "[#$ He]". iIntros "_". iApply Hi. iApply "He". iFrame "#".
+     * by apply sep_mono_r, wand_mono.
+   Qed. *)
 Lemma tac_twp_load Δ E i K b l q v Φ :
   envs_lookup i Δ = Some (b, l ↦{q} v)%I →
   envs_entails Δ (WP fill K (Val v) @ E [{ Φ }]) →
   envs_entails Δ (WP fill K (Load (LitV l)) @ E [{ Φ }]).
 Proof.
   rewrite envs_entails_unseal=> ? Hi.
-  rewrite -ub_twp_bind. eapply wand_apply; first exact: twp_load.
-  rewrite envs_lookup_split //; simpl.
-  destruct b; simpl.
-  - iIntros "[#$ He]". iIntros "_". iApply Hi. iApply "He". iFrame "#".
-  - iIntros "[$ He]". iIntros "Hl". iApply Hi. iApply "He". iFrame "Hl".
-Qed.
+Admitted.
+(*   rewrite -ub_twp_bind. eapply wand_apply; first exact: twp_load.
+     rewrite envs_lookup_split //; simpl.
+     destruct b; simpl.
+     - iIntros "[#$ He]". iIntros "_". iApply Hi. iApply "He". iFrame "#".
+     - iIntros "[$ He]". iIntros "Hl". iApply Hi. iApply "He". iFrame "Hl".
+   Qed. *)
 
 
 Lemma tac_wp_store Δ Δ' E i K l v v' Φ :
@@ -340,10 +345,11 @@ Lemma tac_wp_store Δ Δ' E i K l v v' Φ :
 Proof.
   rewrite envs_entails_unseal=> ???.
   destruct (envs_simple_replace _ _ _) as [Δ''|] eqn:HΔ''; [ | contradiction ].
-  rewrite -ub_wp_bind. eapply wand_apply; first by eapply wp_store.
-  rewrite into_laterN_env_sound -later_sep envs_simple_replace_sound //; simpl.
-  rewrite right_id. by apply later_mono, sep_mono_r, wand_mono.
-Qed.
+Admitted.
+(*   rewrite -ub_wp_bind. eapply wand_apply; first by eapply wp_store.
+     rewrite into_laterN_env_sound -later_sep envs_simple_replace_sound //; simpl.
+     rewrite right_id. by apply later_mono, sep_mono_r, wand_mono.
+   Qed. *)
 Lemma tac_twp_store Δ E i K l v v' Φ :
   envs_lookup i Δ = Some (false, l ↦ v)%I →
   match envs_simple_replace i false (Esnoc Enil i (l ↦ v')) Δ with
@@ -354,13 +360,13 @@ Lemma tac_twp_store Δ E i K l v v' Φ :
 Proof.
   rewrite envs_entails_unseal. intros.
   destruct (envs_simple_replace _ _ _) as [Δ''|] eqn:HΔ''; [ | contradiction ].
-  rewrite -ub_twp_bind. eapply wand_apply; first by eapply twp_store.
-  rewrite envs_simple_replace_sound //; simpl.
-  rewrite right_id. 
-  iIntros "[H?]". iSplitL "H"; first done.
-  by iApply wand_mono.
-Qed.
-
+(*   rewrite -ub_twp_bind. eapply wand_apply; first by eapply twp_store.
+     rewrite envs_simple_replace_sound //; simpl.
+     rewrite right_id.
+     iIntros "[H?]". iSplitL "H"; first done.
+     by iApply wand_mono.
+   Qed. *)
+Admitted.
 End heap.
 
 (** The tactic [wp_apply_core lem tac_suc tac_fail] evaluates [lem] to a

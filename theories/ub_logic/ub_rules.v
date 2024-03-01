@@ -659,6 +659,11 @@ Proof.
   iModIntro.
   iMod "Hclose'".
   iFrame.
+
+  (* rewrite ub_twp_unfold /ub_twp_pre. simpl.
+     iModIntro.
+     iSplitL "Hε2" ; last first. { iApply "HΨ".  } *)
+
   iMod (ec_increase_supply _ (ε2 (nat_to_fin l)) with "Hε2") as "[Hε2 Hfoo]".
   iFrame. iModIntro. wp_pures.
   iModIntro. iApply "HΨ".
